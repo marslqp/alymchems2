@@ -1,11 +1,10 @@
 <?php
 // db.php — подключение к базе для Railway
-$host = getenv('MYSQL_HOST') ?: '127.0.0.1';
-$port = getenv('MYSQL_PORT') ?: 3306;
-$user = getenv('MYSQL_USER') ?: 'root';
-$pass = getenv('MYSQL_PASSWORD') ?: '';
-$db   = getenv('MYSQL_DATABASE') ?: 'alymchems';
-
+$host = getenv('MYSQL_HOST');
+$port = getenv('MYSQL_PORT');
+$user = getenv('MYSQL_USER');
+$pass = getenv('MYSQL_PASSWORD');
+$db   = getenv('MYSQL_DATABASE');
 $conn = new mysqli($host, $user, $pass, $db, (int)$port);
 
 if ($conn->connect_error) {
