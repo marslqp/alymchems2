@@ -1,20 +1,20 @@
-# Используем PHP с Apache
+# Используем PHP 8.2 с Apache
 FROM php:8.2-apache
 
 # Включаем расширения для MySQL
 RUN docker-php-ext-install mysqli pdo pdo_mysql
 
-# Копируем все файлы сайта в папку веб-сервера
+# Копируем все файлы сайта (index.php, login.php, setup_db.php, db.php, JS, CSS)
 COPY . /var/www/html/
 
 # Делаем рабочую директорию
 WORKDIR /var/www/html
 
-# Включаем модуль rewrite для Apache (если нужен)
+# Включаем rewrite, если нужен для красивых URL
 RUN a2enmod rewrite
 
-# Указываем, что контейнер слушает 80 порт
+# Слушаем 80 порт
 EXPOSE 80
 
-# Старт Apache в форграунд режиме (очень важно для Railway!)
+# Запуск Apache в форграунд
 CMD ["apache2-foreground"]
