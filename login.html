@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login | AlymChems</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:"Poppins",sans-serif;background:radial-gradient(circle at top,#0f172a,#020617);color:white;min-height:100vh;display:flex;justify-content:center;align-items:center;padding:20px;}
+        .box{background:rgba(255,255,255,0.05);padding:40px;border-radius:24px;backdrop-filter:blur(15px);border:1px solid rgba(255,255,255,0.1);width:100%;max-width:420px;box-shadow:0 20px 60px rgba(0,0,0,0.5);}
+        .logo{text-align:center;font-size:28px;font-weight:800;margin-bottom:6px;}
+        .logo span{color:#38bdf8;}
+        .sub{text-align:center;color:#64748b;font-size:13px;margin-bottom:30px;}
+        h2{font-size:22px;font-weight:700;margin-bottom:20px;color:#38bdf8;text-align:center;}
+        .field{margin-bottom:18px;}
+        label{display:block;font-size:13px;color:#94a3b8;margin-bottom:6px;}
+        input{width:100%;padding:12px 14px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:white;font-size:15px;outline:none;transition:0.3s;font-family:inherit;}
+        input:focus{border-color:#38bdf8;background:rgba(56,189,248,0.08);}
+        .btn{width:100%;padding:13px;background:#2563eb;color:white;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;transition:0.3s;font-family:inherit;margin-top:4px;}
+        .btn:hover{background:#1d4ed8;transform:translateY(-1px);}
+        .btn:disabled{background:#334155;cursor:not-allowed;transform:none;}
+        .err{color:#f87171;font-size:13px;margin-top:8px;text-align:center;min-height:18px;}
+        .ok{color:#4ade80;font-size:13px;margin-top:8px;text-align:center;min-height:18px;}
+        .toggle{text-align:center;margin-top:20px;font-size:14px;color:#64748b;}
+        .toggle a{color:#38bdf8;text-decoration:none;font-weight:600;cursor:pointer;}
+        .divider{border:none;border-top:1px solid rgba(255,255,255,0.07);margin:20px 0;}
+        .hint{font-size:11px;color:#475569;margin-top:4px;}
+    </style>
+</head>
+<body>
+<div class="box">
+    <div class="logo">⚗️ Alym<span>Chems</span></div>
+    <div class="sub">Alymbek Datka Lyceum · Ош</div>
+
+    <!-- LOGIN -->
+    <div id="login-panel">
+        <h2>Войти в аккаунт</h2>
+        <div class="field">
+            <label>Полное имя</label>
+            <input type="text" id="l-name" placeholder="Иванов Иван" autocomplete="username">
+        </div>
+        <div class="field">
+            <label>Пароль</label>
+            <input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+        </div>
+        <div class="err" id="l-err"></div>
+        <button class="btn" id="l-btn" onclick="doLogin()">Войти</button>
+        <div class="toggle">Нет аккаунта? <a onclick="show('signup')">Регистрация</a></div>
+    </div>
+
+    <!-- SIGNUP -->
+    <div id="signup-panel" style="display:none;">
+        <h2>Создать аккаунт</h2>
+        <div class="field">
+            <label>Полное имя</label>
+            <input type="text" id="s-name" placeholder="Иванов Иван">
+            <div class="hint">Запомни точно — оно используется для входа</div>
+        </div>
+        <div class="field">
+            <label>Класс</label>
+            <input type="number" id="s-grade" placeholder="8" min="7" max="11">
+        </div>
+        <div class="field">
+            <label>Пароль (мин. 6 символов)</label>
+            <input type="password" id="s-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doSignup()">
+        </div>
+        <div class="err" id="s-err"></div>
+        <div class="ok" id="s-ok"></div>
+        <button class="btn" id="s-btn" onclick="doSignup()">Создать аккаунт</button>
+        <div class="toggle">Уже есть аккаунт? <a onclick="show('login')">Войти</a></div>
+    </div>
+</div>
+
+<script>
+function show(panel) {
+    document.getElementById('login-panel').style.display  = panel==='login'  ? 'block' : 'none';
+    document.getElementById('signup-panel').style.display = panel==='signup' ? 'block' : 'none';
+}
+
+function setBtn(id, loading) {
+    const b = document.getElementById(id);
+    b.disabled = loading;
+    b.innerText = loading ? 'Загрузка...' : (id==='l-btn' ? 'Войти' : 'Создать аккаунт');
+}
+
+async function doLogin() {
+    const name = document.getElementById('l-name').value.trim();
+    const pass = document.getElementById('l-pass').value;
+    const err  = document.getElementById('l-err');
+    err.innerText = '';
+    if (!name || !pass) { err.innerText = 'Заполни все поля'; return; }
+    setBtn('l-btn', true);
+    try {
+        const r = await fetch('login.php', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({fullname: name, password: pass})
+        });
+        const data = await r.json();
+        if (data.success) {
+            localStorage.setItem('currentUser', JSON.stringify({
+                name: data.name, grade: data.grade,
+                score: data.total_score, id: data.id
+            }));
+            window.location.href = 'index.html';
+        } else {
+            const msgs = {wrong_credentials:'Неверное имя или пароль', missing_fields:'Заполни все поля'};
+            err.innerText = msgs[data.error] || 'Ошибка входа';
+        }
+    } catch(e) {
+        err.innerText = 'Ошибка сервера. Проверь подключение.';
+    }
+    setBtn('l-btn', false);
+}
+
+async function doSignup() {
+    const name  = document.getElementById('s-name').value.trim();
+    const grade = document.getElementById('s-grade').value;
+    const pass  = document.getElementById('s-pass').value;
+    const err   = document.getElementById('s-err');
+    const ok    = document.getElementById('s-ok');
+    err.innerText = ''; ok.innerText = '';
+    if (!name || !grade || !pass) { err.innerText = 'Заполни все поля'; return; }
+    if (pass.length < 6) { err.innerText = 'Пароль минимум 6 символов'; return; }
+    setBtn('s-btn', true);
+    try {
+        const r = await fetch('signup.php', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({fullname: name, grade: parseInt(grade), password: pass})
+        });
+        const data = await r.json();
+        if (data.success) {
+            localStorage.setItem('currentUser', JSON.stringify({
+                name: data.name, grade: data.grade, score: 0
+            }));
+            ok.innerText = 'Аккаунт создан! Перенаправление...';
+            setTimeout(() => { window.location.href = 'index.html'; }, 1000);
+        } else {
+            const msgs = {
+                name_taken:'Это имя уже занято. Войди в аккаунт.',
+                password_short:'Пароль слишком короткий',
+                missing_fields:'Заполни все поля'
+            };
+            err.innerText = msgs[data.error] || 'Ошибка регистрации';
+        }
+    } catch(e) {
+        err.innerText = 'Ошибка сервера. Убедись что сайт онлайн.';
+    }
+    setBtn('s-btn', false);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Профиль | AlymChems</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:"Poppins",sans-serif;background:radial-gradient(circle at top,#0f172a,#020617);color:white;min-height:100vh;padding:30px 20px;}
+        .back{color:#38bdf8;text-decoration:none;font-weight:600;font-size:14px;}
+        .wrap{max-width:720px;margin:20px auto;}
+        .card{background:rgba(255,255,255,0.05);border-radius:24px;padding:30px;border:1px solid rgba(255,255,255,0.08);backdrop-filter:blur(15px);margin-bottom:20px;}
+        .avatar{width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#38bdf8);display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:800;margin:0 auto 16px;box-shadow:0 0 30px rgba(56,189,248,0.4);}
+        .uname{font-size:26px;font-weight:800;text-align:center;}
+        .badge-grade{display:inline-block;background:rgba(37,99,235,0.3);border:1px solid #2563eb;padding:4px 16px;border-radius:20px;color:#93c5fd;font-size:13px;margin:8px auto 0;display:block;width:fit-content;margin:8px auto 4px;}
+        .joined{text-align:center;color:#475569;font-size:12px;}
+        .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+        .sbox{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:18px;text-align:center;}
+        .snum{font-size:30px;font-weight:800;color:#38bdf8;}
+        .slbl{font-size:11px;color:#475569;margin-top:4px;}
+        .section-ttl{font-size:15px;font-weight:700;color:#94a3b8;margin-bottom:14px;}
+        .badges{display:flex;flex-wrap:wrap;gap:10px;}
+        .bdg{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;font-size:13px;min-width:180px;}
+        .bdg.earned{border-color:#38bdf8;background:rgba(56,189,248,0.08);}
+        .bdg.earned .bname{color:#38bdf8;}
+        .bname{font-weight:700;}
+        .bdesc{font-size:11px;color:#475569;}
+        .history-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:14px;}
+        .history-pts{color:#4ade80;font-weight:700;}
+        .logout{width:100%;padding:13px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.25);border-radius:12px;color:#f87171;font-size:15px;font-weight:700;cursor:pointer;transition:0.3s;font-family:inherit;}
+        .logout:hover{background:rgba(239,68,68,0.25);}
+        .nologin{text-align:center;padding:80px 20px;}
+        .nologin h2{color:#38bdf8;margin-bottom:16px;}
+        .nologin a{display:inline-block;padding:12px 28px;background:#2563eb;border-radius:10px;color:white;text-decoration:none;font-weight:700;}
+        .loading{text-align:center;padding:40px;color:#475569;}
+        .rank-badge{background:linear-gradient(135deg,#f59e0b,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800;font-size:18px;}
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <a href="index.html" class="back">← На главную</a>
+    <div id="root" style="margin-top:20px;"></div>
+</div>
+<script>
+const BADGES = [
+    {icon:"🔬",name:"First Steps",desc:"Первые очки",req:1},
+    {icon:"⚗️",name:"Lab Rat",desc:"50 очков",req:50},
+    {icon:"🧪",name:"Chemist",desc:"100 очков",req:100},
+    {icon:"🏆",name:"Champion",desc:"200 очков",req:200},
+    {icon:"💎",name:"Diamond",desc:"500 очков",req:500},
+    {icon:"🌟",name:"Legend",desc:"1000 очков",req:1000},
+];
+
+async function init() {
+    const root = document.getElementById('root');
+    const raw = localStorage.getItem('currentUser');
+    if (!raw) {
+        root.innerHTML = `<div class="nologin"><h2>Ты не вошёл</h2><p style="color:#475569;margin-bottom:20px;">Войди чтобы увидеть профиль</p><a href="login.html">Войти</a></div>`;
+        return;
+    }
+    const user = JSON.parse(raw);
+    root.innerHTML = `<div class="loading">Загрузка профиля...</div>`;
+
+    // Обновляем очки с сервера
+    let serverScore = user.score || 0;
+    let rank = '—';
+    let completed = [];
+    try {
+        const r = await fetch(`scores_api.php?action=user_data&user=${encodeURIComponent(user.name)}`);
+        const d = await r.json();
+        if (!d.error) {
+            serverScore = d.total_score;
+            rank = d.rank;
+            completed = d.completed || [];
+            // Обновляем localStorage
+            user.score = serverScore;
+            localStorage.setItem('currentUser', JSON.stringify(user));
+        }
+    } catch(e) {}
+
+    const initial = user.name[0].toUpperCase();
+    const badges = BADGES.map(b => ({...b, earned: serverScore >= b.req}));
+    const earnedCount = badges.filter(b=>b.earned).length;
+    const joinedDate = user.joined || new Date().toLocaleDateString('ru-RU');
+
+    // Красивые названия активностей
+    const activityNames = {
+        'quiz_7_Introduction to Chemistry': '📗 Тест: Введение в химию (7кл)',
+        'quiz_7_Physical vs Chemical Changes': '📗 Тест: Физ/хим изменения (7кл)',
+        'quiz_8_Acids and Bases': '📘 Тест: Кислоты и основания (8кл)',
+        'quiz_8_Chemical Reactions': '📘 Тест: Химические реакции (8кл)',
+        'quiz_9_Organic Chemistry': '📙 Тест: Органическая химия (9кл)',
+        'quiz_9_Electrochemistry': '📙 Тест: Электрохимия (9кл)',
+    };
+    const historyHTML = completed.length
+        ? completed.map(k => `<div class="history-item"><span>${activityNames[k]||k}</span><span class="history-pts">✓</span></div>`).join('')
+        : `<p style="color:#475569;font-size:13px;">Пока нет выполненных активностей. Пройди тесты!</p>`;
+
+    root.innerHTML = `
+    <div class="card" style="text-align:center;">
+        <div class="avatar">${initial}</div>
+        <div class="uname">${user.name}</div>
+        <div class="badge-grade">📚 Класс ${user.grade}</div>
+        <div class="joined">Участник с ${joinedDate}</div>
+    </div>
+
+    <div class="stats">
+        <div class="sbox"><div class="snum">${serverScore}</div><div class="slbl">Очков</div></div>
+        <div class="sbox"><div class="snum rank-badge">#${rank}</div><div class="slbl">Рейтинг</div></div>
+        <div class="sbox"><div class="snum">${earnedCount}/${BADGES.length}</div><div class="slbl">Значков</div></div>
+    </div>
+
+    <div class="card">
+        <div class="section-ttl">🏅 Достижения</div>
+        <div class="badges">
+            ${badges.map(b=>`
+            <div class="bdg ${b.earned?'earned':''}">
+                <span style="font-size:24px;">${b.icon}</span>
+                <div>
+                    <div class="bname">${b.name}</div>
+                    <div class="bdesc">${b.desc}${b.earned?' ✓':' — '+b.req+' pts'}</div>
+                </div>
+            </div>`).join('')}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="section-ttl">📋 Выполненные активности</div>
+        ${historyHTML}
+    </div>
+
+    <button class="logout" onclick="logout()">🚪 Выйти из аккаунта</button>
+    `;
+}
+
+function logout() {
+    localStorage.removeItem('currentUser');
+    window.location.href = 'index.html';
+}
+
+init();
+</script>
+</body>
+</html>

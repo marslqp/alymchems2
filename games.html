@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Игры | AlymChems</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;user-select:none;}
+        body{font-family:'Poppins',sans-serif;background:radial-gradient(circle at top,#0f172a,#020617);color:white;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:60px 20px 40px;overflow-x:hidden;}
+        .back-btn{position:fixed;top:16px;left:16px;color:#38bdf8;text-decoration:none;font-weight:600;z-index:200;background:rgba(2,6,23,0.8);padding:8px 14px;border-radius:10px;font-size:14px;}
+        /* Счёт — теперь показывает только очки ТЕКУЩЕЙ сессии */
+        .score-board{position:fixed;top:16px;right:16px;background:rgba(56,189,248,0.12);padding:8px 20px;border-radius:14px;border:1px solid rgba(56,189,248,0.3);font-weight:800;font-size:18px;color:#38bdf8;z-index:200;}
+        .notif{position:fixed;top:60px;right:16px;background:#10b981;padding:8px 16px;border-radius:10px;font-size:13px;font-weight:600;z-index:200;opacity:0;transition:opacity 0.5s;pointer-events:none;}
+        h1{font-size:34px;font-weight:800;text-shadow:0 0 20px rgba(56,189,248,0.5);margin-bottom:4px;}
+        .subtitle{color:#64748b;margin-bottom:22px;font-size:14px;}
+        .game-nav{display:flex;gap:8px;margin-bottom:24px;flex-wrap:wrap;justify-content:center;}
+        .nav-btn{background:rgba(255,255,255,0.05);border:none;padding:9px 16px;color:#94a3b8;border-radius:25px;cursor:pointer;transition:0.3s;font-weight:600;font-size:13px;font-family:inherit;}
+        .nav-btn:hover{background:rgba(255,255,255,0.1);}
+        .nav-btn.active{background:#2563eb;color:white;box-shadow:0 0 14px rgba(37,99,235,0.5);}
+        .game-area{background:rgba(255,255,255,0.04);backdrop-filter:blur(15px);padding:28px;border-radius:24px;max-width:720px;width:100%;min-height:500px;display:flex;flex-direction:column;align-items:center;border:1px solid rgba(255,255,255,0.07);box-shadow:0 20px 50px rgba(0,0,0,0.5);}
+        .gdesc{background:rgba(56,189,248,0.07);border:1px solid rgba(56,189,248,0.18);border-radius:10px;padding:10px 16px;font-size:13px;color:#93c5fd;margin-bottom:18px;text-align:center;max-width:500px;line-height:1.6;}
+        .hidden{display:none!important;}
+        input[type="text"]{padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);width:100%;max-width:280px;background:rgba(0,0,0,0.3);color:white;text-align:center;margin-bottom:14px;outline:none;font-size:16px;font-family:inherit;}
+        .btn{padding:10px 22px;border:none;border-radius:10px;cursor:pointer;font-weight:700;transition:0.3s;font-size:14px;font-family:inherit;}
+        .btn-p{background:#2563eb;color:white;} .btn-p:hover{background:#1d4ed8;}
+        .btn-s{background:#10b981;color:white;margin-top:14px;}
+        .btn-h{background:transparent;border:1px solid #f59e0b;color:#f59e0b;margin-top:8px;}
+        #catcher-container{width:100%;height:280px;position:relative;background:rgba(0,0,0,0.4);border-radius:14px;overflow:hidden;border:1px solid #38bdf8;cursor:none;}
+        #player{position:absolute;bottom:8px;width:85px;height:32px;background:#38bdf8;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;box-shadow:0 0 14px #38bdf8;left:50%;transform:translateX(-50%);pointer-events:none;color:#020617;}
+        .fitem{position:absolute;font-weight:800;font-size:22px;pointer-events:none;}
+        #ctimer{position:absolute;top:10px;left:10px;color:#f59e0b;font-weight:800;font-size:17px;}
+        #feedback{margin-top:14px;font-weight:600;min-height:22px;text-align:center;font-size:17px;}
+        .ptable{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%;}
+        .ecard{background:rgba(255,255,255,0.07);border:2px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px;text-align:center;cursor:pointer;transition:0.25s;}
+        .ecard:hover{background:rgba(56,189,248,0.14);border-color:#38bdf8;transform:scale(1.04);}
+        .esym{font-size:22px;font-weight:800;color:#38bdf8;}
+        .enm{font-size:10px;color:#64748b;margin-top:2px;}
+        .reagent{padding:9px 14px;background:rgba(255,255,255,0.09);margin:5px;border-radius:8px;cursor:grab;font-weight:700;font-size:17px;border:1px solid rgba(255,255,255,0.14);transition:0.2s;}
+        .reagent:hover{background:rgba(56,189,248,0.18);}
+        .online-badge{font-size:11px;background:rgba(16,185,129,0.2);border:1px solid #10b981;color:#4ade80;padding:2px 8px;border-radius:14px;margin-left:6px;}
+    </style>
+</head>
+<body>
+<div class="score-board">⭐ <span id="score-val">0</span></div>
+<div class="notif" id="notif">✅ Очки сохранены!</div>
+<a href="index.html" class="back-btn">← Главная</a>
+
+<h1>⚗️ Chem Lab</h1>
+<p class="subtitle">Интерактивные химические игры</p>
+
+<div class="game-nav">
+    <button class="nav-btn active" onclick="changeGame('elements',this)">🔤 Символы</button>
+    <button class="nav-btn" onclick="changeGame('reactor',this)">⚗️ Реактор</button>
+    <button class="nav-btn" onclick="changeGame('assembly',this)">🧬 Молекулы</button>
+    <button class="nav-btn" onclick="changeGame('catcher',this)">🎯 Ловушка</button>
+    <button class="nav-btn" onclick="changeGame('ptable',this)">📊 Таблица</button>
+    <button class="nav-btn" onclick="changeGame('external',this)">🌐 PhET<span class="online-badge">Online</span></button>
+</div>
+
+<div class="game-area">
+    <div style="text-align:center;">
+        <h3 id="g-title" style="margin-bottom:4px;"></h3>
+        <div class="gdesc" id="g-desc"></div>
+    </div>
+
+    <div id="elements-game" class="g-content">
+        <div id="el-symbol" style="font-size:76px;font-weight:800;color:#38bdf8;margin:8px 0;text-shadow:0 0 28px rgba(56,189,248,0.6);">H</div>
+        <input type="text" id="el-input" placeholder="Название элемента..." onkeydown="if(event.key==='Enter')checkEl()">
+        <button class="btn btn-p" onclick="checkEl()">Ответить</button>
+    </div>
+
+    <div id="reactor-game" class="g-content hidden">
+        <div style="display:flex;gap:28px;align-items:center;margin-top:8px;flex-wrap:wrap;justify-content:center;">
+            <div id="reagent-list" style="display:flex;flex-direction:column;"></div>
+            <div style="width:120px;height:150px;border:4px solid #cbd5e1;border-top:none;border-radius:0 0 18px 18px;position:relative;" ondragover="event.preventDefault()" ondrop="dropR(event)">
+                <div style="position:absolute;top:-22px;width:100%;text-align:center;font-size:12px;color:#94a3b8;">Перетащи сюда ↓</div>
+                <div id="r-liquid" style="position:absolute;bottom:0;width:100%;height:30%;background:#38bdf8;transition:0.8s;border-radius:0 0 13px 13px;"></div>
+            </div>
+        </div>
+        <div id="r-formula" style="margin-top:14px;font-size:18px;font-weight:800;color:#f59e0b;"></div>
+    </div>
+
+    <div id="assembly-game" class="g-content hidden">
+        <div id="as-target" style="background:rgba(0,0,0,0.3);padding:12px 28px;border-radius:12px;font-size:22px;font-weight:800;margin-bottom:18px;color:#38bdf8;"></div>
+        <div id="as-pool" style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:18px;"></div>
+        <div id="as-cur" style="font-size:26px;color:#4ade80;font-weight:800;min-height:38px;letter-spacing:3px;"></div>
+    </div>
+
+    <div id="catcher-game" class="g-content hidden" style="width:100%;">
+        <div id="catcher-container">
+            <div id="ctimer">Время: 30с</div>
+            <div id="player">КОЛБА</div>
+        </div>
+        <button class="btn btn-p" id="start-catcher" style="margin-top:13px;" onclick="startCatcher()">▶ Начать (30 сек)</button>
+    </div>
+
+    <div id="ptable-game" class="g-content hidden" style="width:100%;">
+        <div id="pt-q" style="font-size:17px;font-weight:700;margin-bottom:18px;text-align:center;"></div>
+        <div class="ptable" id="pt-grid"></div>
+    </div>
+
+    <div id="external-game" class="g-content hidden" style="width:100%;text-align:center;">
+        <p style="color:#94a3b8;font-size:13px;margin-bottom:14px;">Строй настоящие атомы — добавляй протоны, нейтроны и электроны!</p>
+        <a href="https://phet.colorado.edu/sims/html/build-an-atom/latest/build-an-atom_en.html" target="_blank" class="btn btn-p" style="display:inline-block;text-decoration:none;font-size:15px;padding:13px 28px;">🚀 Открыть Atom Builder (PhET)</a>
+        <p style="color:#475569;font-size:12px;margin-top:12px;">Открывается в новой вкладке — бесплатная симуляция от University of Colorado</p>
+        <div style="margin-top:24px;background:rgba(56,189,248,0.07);border:1px solid rgba(56,189,248,0.18);border-radius:14px;padding:18px;">
+            <div style="font-size:13px;color:#93c5fd;font-weight:700;margin-bottom:8px;">🎯 Вызов:</div>
+            <p style="color:#94a3b8;font-size:13px;">Построй атомы Углерода, Кислорода и Натрия, затем вернись и нажми кнопку!</p>
+            <button class="btn btn-s" style="margin-top:12px;" onclick="awardExt()">✅ Я выполнил вызов! (+30 pts)</button>
+            <div id="ext-msg" style="color:#4ade80;font-size:13px;margin-top:8px;display:none;"></div>
+        </div>
+    </div>
+
+    <div id="feedback"></div>
+    <button id="show-ans" class="btn btn-h hidden" onclick="revealAns()">💡 Показать ответ</button>
+    <button id="next-btn" class="btn btn-s hidden" onclick="nextQ()">Следующий →</button>
+</div>
+
+<script>
+// ─── БД ИГР ───────────────────────────────────────────────────────────────
+const DB = {
+    elements:{
+        title:"Symbol Master — Символы",
+        desc:"На экране появляется химический символ. Введи полное английское название элемента и заработай 10 очков. После 3 ошибок можно посмотреть ответ.",
+        q:[{s:"Au",a:"gold"},{s:"Ag",a:"silver"},{s:"Hg",a:"mercury"},{s:"Na",a:"sodium"},{s:"Fe",a:"iron"},{s:"Pb",a:"lead"},{s:"K",a:"potassium"},{s:"Cu",a:"copper"},{s:"Sn",a:"tin"},{s:"W",a:"tungsten"},{s:"Zn",a:"zinc"},{s:"Ca",a:"calcium"}]
+    },
+    reactor:{
+        title:"Reaction Lab — Реактор",
+        desc:"Перетащи правильный реагент в колбу, чтобы запустить реакцию. За каждую правильную реакцию — 10 очков!",
+        q:[
+            {t:"H₂O + ?",c:"Na",p:["Na","Au","Ag"],col:"#ef4444",f:"2Na + 2H₂O → 2NaOH + H₂↑"},
+            {t:"H₂SO₄ + ?",c:"Zn",p:["Zn","Glass","Oil"],col:"#fbbf24",f:"Zn + H₂SO₄ → ZnSO₄ + H₂↑"},
+            {t:"CuSO₄ + ?",c:"Fe",p:["Fe","Sand","Plastic"],col:"#3b82f6",f:"Fe + CuSO₄ → FeSO₄ + Cu"},
+            {t:"HCl + ?",c:"Ca",p:["Ca","Ne","Ar"],col:"#8b5cf6",f:"Ca + 2HCl → CaCl₂ + H₂↑"}
+        ]
+    },
+    assembly:{
+        title:"Molecule Builder — Молекулы",
+        desc:"Кликни атомы в правильном порядке чтобы собрать молекулу. Одна ошибка — цепочка сбрасывается. Собери правильно — 10 очков!",
+        q:[
+            {n:"Вода",f:"H₂O",c:["H","H","O"],p:["H","O","C","N"]},
+            {n:"Метан",f:"CH₄",c:["C","H","H","H","H"],p:["C","H","O","N"]},
+            {n:"Аммиак",f:"NH₃",c:["N","H","H","H"],p:["N","H","O","C"]},
+            {n:"CO₂",f:"CO₂",c:["C","O","O"],p:["C","O","H","N"]}
+        ]
+    },
+    catcher:{
+        title:"Element Catcher — Ловушка",
+        desc:"Двигай мышью чтобы управлять колбой. Лови Металлы (+5) — золотые буквы, избегай Неметаллы (-10) — красные. 30 секунд!"
+    },
+    ptable:{
+        title:"Periodic Quiz — Таблица Менделеева",
+        desc:"На экране 4 элемента. Выбери тот, который отвечает на вопрос. Правильный ответ — 15 очков!",
+        q:[
+            {question:"Какой элемент имеет атомный номер 1?",correct:"H",options:["H","He","Li","Be"]},
+            {question:"Какой из них — Инертный газ?",correct:"Ne",options:["Ne","Na","N","Ni"]},
+            {question:"Какой металл жидкий при комнатной температуре?",correct:"Hg",options:["Hg","Au","Ag","Fe"]},
+            {question:"Какой элемент нужен для дыхания?",correct:"O",options:["O","Os","N","Ar"]},
+            {question:"Какой щелочной металл взрывается в воде?",correct:"K",options:["K","Ca","Mg","Al"]},
+            {question:"Из чего на 78% состоит воздух?",correct:"N",options:["N","O","Ar","He"]},
+            {question:"Какой элемент самый распространённый в земной коре?",correct:"O",options:["O","Si","Al","Fe"]},
+            {question:"Что делает золото таким ценным химически?",correct:"Au",options:["Au","Ag","Pt","Cu"]},
+        ]
+    },
+    external:{
+        title:"PhET Atom Builder — Онлайн",
+        desc:"Интерактивная симуляция от Университета Колорадо. Строй настоящие атомы и изучай как работает ядро!"
+    }
+};
+
+const PINFO = {"H":{name:"Hydrogen",mass:"1.008"},"He":{name:"Helium",mass:"4.003"},"Li":{name:"Lithium",mass:"6.941"},"Be":{name:"Beryllium",mass:"9.012"},"N":{name:"Nitrogen",mass:"14.01"},"O":{name:"Oxygen",mass:"16.00"},"Ne":{name:"Neon",mass:"20.18"},"Na":{name:"Sodium",mass:"22.99"},"Mg":{name:"Magnesium",mass:"24.31"},"Al":{name:"Aluminum",mass:"26.98"},"Ni":{name:"Nickel",mass:"58.69"},"Ca":{name:"Calcium",mass:"40.08"},"Fe":{name:"Iron",mass:"55.85"},"Cu":{name:"Copper",mass:"63.55"},"Hg":{name:"Mercury",mass:"200.6"},"Au":{name:"Gold",mass:"196.9"},"Ag":{name:"Silver",mass:"107.9"},"Ar":{name:"Argon",mass:"39.95"},"Os":{name:"Osmium",mass:"190.2"},"Pt":{name:"Platinum",mass:"195.1"},"Si":{name:"Silicon",mass:"28.09"}};
+
+// ─── СОСТОЯНИЕ ─────────────────────────────────────────────────────────────
+let curType='elements', qIdx=0;
+// sessionScore — очки набранные В ЭТОЙ ВКЛАДКЕ (не переносятся между сессиями)
+let sessionScore = 0;
+let attempts=0, isLocked=false, buildChain=[], solved=new Set(), extClaimed=false;
+
+// Загружаем текущего пользователя
+let currentUser = null;
+try { currentUser = JSON.parse(localStorage.getItem('currentUser')); } catch(e){}
+
+document.getElementById('score-val').innerText = sessionScore;
+
+// ─── СМЕНА ИГРЫ ────────────────────────────────────────────────────────────
+function changeGame(type, btn) {
+    curType=type; qIdx=0; stopCatcher(); buildChain=[];
+    document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+    if(btn) btn.classList.add('active');
+    document.querySelectorAll('.g-content').forEach(el=>el.classList.add('hidden'));
+    document.getElementById(type+'-game').classList.remove('hidden');
+    document.getElementById('g-title').innerText = DB[type].title;
+    document.getElementById('g-desc').innerText  = DB[type].desc;
+    resetUI();
+    if(type!=='catcher' && type!=='external') renderQ();
+}
+
+function renderQ() {
+    resetUI();
+    const data = DB[curType].q[qIdx];
+    if(curType==='elements') {
+        document.getElementById('el-symbol').innerText = data.s;
+        document.getElementById('el-input').value='';
+        setTimeout(()=>document.getElementById('el-input').focus(),80);
+    } else if(curType==='reactor') {
+        document.getElementById('r-liquid').style.height="30%";
+        document.getElementById('r-liquid').style.background="#38bdf8";
+        document.getElementById('r-formula').innerText="";
+        const list=document.getElementById('reagent-list'); list.innerHTML="";
+        data.p.forEach(i=>{
+            const d=document.createElement('div'); d.className='reagent'; d.innerText=i; d.draggable=true;
+            d.ondragstart=e=>e.dataTransfer.setData("text",i); list.appendChild(d);
+        });
+    } else if(curType==='assembly') {
+        document.getElementById('as-target').innerText=data.n+" ("+data.f+")";
+        document.getElementById('as-cur').innerText=""; buildChain=[];
+        const pool=document.getElementById('as-pool'); pool.innerHTML="";
+        data.p.forEach(atom=>{
+            const b=document.createElement('button'); b.className='btn btn-p'; b.style.fontSize="17px"; b.style.fontWeight="800"; b.innerText=atom;
+            b.onclick=()=>{
+                buildChain.push(atom);
+                document.getElementById('as-cur').innerText=buildChain.join("");
+                if(buildChain[buildChain.length-1]!==data.c[buildChain.length-1]){fail();buildChain=[];document.getElementById('as-cur').innerText="";}
+                else if(buildChain.length===data.c.length) win();
+            };
+            pool.appendChild(b);
+        });
+    } else if(curType==='ptable') {
+        const q=data;
+        document.getElementById('pt-q').innerText=q.question;
+        const grid=document.getElementById('pt-grid'); grid.innerHTML="";
+        q.options.forEach(sym=>{
+            const info=PINFO[sym]||{name:sym,mass:"?"};
+            const card=document.createElement('div'); card.className='ecard';
+            card.innerHTML=`<div class="esym">${sym}</div><div class="enm">${info.name}</div>`;
+            card.onclick=()=>{ if(isLocked)return; if(sym===q.correct)win(15); else fail(); };
+            grid.appendChild(card);
+        });
+    }
+}
+
+function checkEl() {
+    if(isLocked)return;
+    if(document.getElementById('el-input').value.trim().toLowerCase()===DB.elements.q[qIdx].a) win(); else fail();
+}
+function dropR(e) {
+    if(isLocked)return;
+    const val=e.dataTransfer.getData("text"), data=DB.reactor.q[qIdx];
+    if(val===data.c){
+        document.getElementById('r-liquid').style.height="88%";
+        document.getElementById('r-liquid').style.background=data.col;
+        document.getElementById('r-formula').innerText="✅ "+data.f;
+        win();
+    } else fail();
+}
+
+function win(pts=10) {
+    const key=`game_${curType}_${qIdx}`;
+    if(!solved.has(key)){
+        sessionScore+=pts; solved.add(key);
+        document.getElementById('score-val').innerText=sessionScore;
+        pushScore(`game_${curType}`, pts);
+    }
+    isLocked=true;
+    document.getElementById('feedback').innerText="Правильно! 🎉 +"+pts+" pts";
+    document.getElementById('feedback').style.color="#4ade80";
+    document.getElementById('next-btn').classList.remove('hidden');
+    document.getElementById('show-ans').classList.add('hidden');
+}
+function fail() {
+    attempts++;
+    document.getElementById('feedback').innerText="Неверно! Попробуй ещё ("+attempts+" поп.)";
+    document.getElementById('feedback').style.color="#f87171";
+    if(attempts>=3) document.getElementById('show-ans').classList.remove('hidden');
+}
+function revealAns() {
+    const d=DB[curType].q[qIdx];
+    const ans=d.a||d.correct||(d.c?d.c.join(""):d.f)||"";
+    document.getElementById('feedback').innerText="Ответ: "+ans;
+    document.getElementById('feedback').style.color="#f59e0b";
+    isLocked=true; document.getElementById('next-btn').classList.remove('hidden');
+    document.getElementById('show-ans').classList.add('hidden');
+}
+function nextQ(){ qIdx=(qIdx+1)%DB[curType].q.length; renderQ(); }
+function resetUI(){ isLocked=false; attempts=0; document.getElementById('feedback').innerText=""; document.getElementById('next-btn').classList.add('hidden'); document.getElementById('show-ans').classList.add('hidden'); }
+
+// ─── CATCHER ───────────────────────────────────────────────────────────────
+let cInt,tInt,tLeft=30,cOk=0,cBad=0,cDelta=0;
+const cbox=document.getElementById('catcher-container');
+const plr=document.getElementById('player');
+cbox.onmousemove=e=>{
+    const r=cbox.getBoundingClientRect();
+    let x=e.clientX-r.left-42;
+    if(x<0)x=0; if(x>r.width-85)x=r.width-85;
+    plr.style.left=x+"px";
+};
+function startCatcher(){
+    resetUI(); tLeft=30; cOk=0; cBad=0; cDelta=0;
+    document.getElementById('start-catcher').classList.add('hidden');
+    document.getElementById('ctimer').innerText=`Время: ${tLeft}с`;
+    tInt=setInterval(()=>{ tLeft--; document.getElementById('ctimer').innerText=`Время: ${tLeft}с`; if(tLeft<=0)endCatcher(); },1000);
+    cInt=setInterval(()=>spawnItem(Math.random()>0.4),700);
+}
+function spawnItem(isMetal){
+    const item=document.createElement('div'); item.className='fitem';
+    item.innerText=isMetal?["Au","Na","Fe","Li","K","Zn"][Math.floor(Math.random()*6)]:["O","N","Cl","He","Ne","Ar"][Math.floor(Math.random()*6)];
+    item.style.color=isMetal?"#fbbf24":"#f87171";
+    item.style.left=Math.random()*(cbox.offsetWidth-30)+"px"; item.style.top="0px";
+    cbox.appendChild(item);
+    let top=0;
+    const fall=setInterval(()=>{
+        top+=4; item.style.top=top+"px";
+        const pLeft=parseInt(plr.style.left||cbox.offsetWidth/2-42);
+        if(top>240&&top<280&&parseInt(item.style.left)>pLeft-18&&parseInt(item.style.left)<pLeft+80){
+            if(isMetal){cOk++;cDelta+=5;}else{cBad++;cDelta-=10;}
+            clearInterval(fall); item.remove();
+        }
+        if(top>290){clearInterval(fall);item.remove();}
+    },20);
+}
+function endCatcher(){
+    stopCatcher();
+    if(cDelta>0){ sessionScore+=cDelta; document.getElementById('score-val').innerText=sessionScore; pushScore('game_catcher',cDelta); }
+    document.getElementById('feedback').innerHTML=`Игра окончена! ✅ Поймано: ${cOk} (+${cOk*5})  ❌ Пропущено: ${cBad} (-${cBad*10})<br><b>${cDelta>0?'+':''}${cDelta} pts</b>`;
+    document.getElementById('feedback').style.color=cDelta>=0?"#4ade80":"#f87171";
+    document.getElementById('start-catcher').classList.remove('hidden');
+    document.getElementById('start-catcher').innerText="▶ Сыграть снова";
+}
+function stopCatcher(){ clearInterval(cInt); clearInterval(tInt); document.querySelectorAll('.fitem').forEach(i=>i.remove()); }
+
+// ─── EXTERNAL ──────────────────────────────────────────────────────────────
+function awardExt(){
+    const el=document.getElementById('ext-msg');
+    if(extClaimed){el.style.display='block';el.innerText='Уже засчитано!';return;}
+    extClaimed=true; sessionScore+=30;
+    document.getElementById('score-val').innerText=sessionScore;
+    pushScore('game_external_challenge',30);
+    el.style.display='block'; el.innerText='Отлично! +30 очков засчитано!';
+}
+
+// ─── СОХРАНЕНИЕ НА СЕРВЕР ──────────────────────────────────────────────────
+async function pushScore(actKey, pts) {
+    if(!currentUser || pts<=0) return;
+    try {
+        await fetch('scores_api.php?action=save', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({user:currentUser.name, activity_key:actKey+'_'+qIdx, points:pts})
+        });
+        // Обновляем localStorage с новым счётом
+        currentUser.score = (currentUser.score||0) + pts;
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        showNotif();
+    } catch(e){}
+}
+function showNotif(){
+    const n=document.getElementById('notif'); n.style.opacity='1';
+    setTimeout(()=>n.style.opacity='0',2000);
+}
+
+changeGame('elements', document.querySelector('.nav-btn'));
+</script>
+</body>
+</html>
