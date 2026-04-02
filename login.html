@@ -130,7 +130,7 @@ async function doSignup() {
     const err   = document.getElementById('s-err');
     const ok    = document.getElementById('s-ok');
     err.innerText = ''; ok.innerText = '';
-    if (!name || !userClass || !pass) { err.innerText = 'Заполни все поля'; return; }
+    if (!name || !grade || !pass) { err.innerText = 'Заполни все поля'; return; }
     if (pass.length < 6) { err.innerText = 'Пароль минимум 6 символов'; return; }
     setBtn('s-btn', true);
     try {
