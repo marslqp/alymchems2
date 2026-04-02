@@ -5,7 +5,7 @@ FROM php:8.2-apache
 RUN docker-php-ext-install mysqli pdo pdo_mysql
 
 # Копируем все файлы в папку веб-сервера
-COPY src/ /var/www/html/
+COPY . /var/www/html/
 
 # Делаем /var/www/html доступной
 WORKDIR /var/www/html
