@@ -7,7 +7,7 @@ $queries = [
 "CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     fullname VARCHAR(100) NOT NULL UNIQUE,
-    class varchar(10) NOT NULL,
+    grade varchar(10) NOT NULL,
     password VARCHAR(255) NOT NULL,
     total_score INT DEFAULT 0,
     joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
