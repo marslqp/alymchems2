@@ -8,9 +8,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $input = json_decode(file_get_contents('php://input'), true);
-// поддержка и JSON и обычной формы
 $name  = trim($input['fullname'] ?? $_POST['fullname'] ?? '');
-$grade = intval($input['grade']  ?? $_POST['grade']    ?? 0);
+$grade = trim($input['grade']    ?? $_POST['grade']    ?? '');  // теперь строка: "A", "MED" и т.д.
 $raw   = $input['password']      ?? $_POST['password'] ?? '';
 
 if (!$name || !$grade || !$raw) {
@@ -20,7 +19,6 @@ if (strlen($raw) < 6) {
     echo json_encode(['error' => 'password_short']); exit;
 }
 
-// Проверяем уникальность имени
 $check = $conn->prepare("SELECT id FROM users WHERE LOWER(fullname)=LOWER(?)");
 $check->bind_param('s', $name);
 $check->execute();
@@ -32,7 +30,7 @@ $check->close();
 
 $hash = password_hash($raw, PASSWORD_DEFAULT);
 $stmt = $conn->prepare("INSERT INTO users (fullname, grade, password) VALUES (?,?,?)");
-$stmt->bind_param('sis', $name, $grade, $hash);
+$stmt->bind_param('sss', $name, $grade, $hash);  // 'sss' — все строки
 
 if ($stmt->execute()) {
     echo json_encode(['success' => true, 'name' => $name, 'grade' => $grade]);
