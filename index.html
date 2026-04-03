@@ -102,7 +102,7 @@ footer{text-align:center;padding:30px;background:rgba(255,255,255,0.03);border-t
     <p>Образовательная платформа лицея Алымбек Датка (Ош). Учись, играй, соревнуйся и вдохновляйся миром молекул и реакций.</p>
     <div class="hero-btns">
         <a href="#features" class="btn">🚀 Начать учиться</a>
-        <a href="login.html" class="btn btn-ghost">Создать аккаунт</a>
+        <a href="login.html" class="btn btn-ghost" id="hero-signup-btn">Создать аккаунт</a>
     </div>
 </section>
 
@@ -304,13 +304,17 @@ footer{text-align:center;padding:30px;background:rgba(255,255,255,0.03);border-t
 document.addEventListener('DOMContentLoaded',()=>{
     const raw = localStorage.getItem('currentUser');
     const btn = document.getElementById('auth-btn');
+    const signupBtn = document.getElementById('hero-signup-btn');
     if(raw){
         try{
             const u = JSON.parse(raw);
             if(u && u.name){
+                // Навбар — показываем имя пользователя
                 btn.innerText = '👤 '+u.name;
                 btn.href = 'profile.html';
                 btn.style.cssText = 'padding:8px 18px;background:rgba(56,189,248,0.15);border:1px solid #38bdf8;border-radius:8px;color:#38bdf8;font-weight:700;font-size:13px;text-decoration:none;';
+                // Hero — скрываем кнопку "Создать аккаунт"
+                if(signupBtn) signupBtn.style.display = 'none';
             }
         }catch(e){}
     }
