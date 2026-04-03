@@ -17,6 +17,7 @@
         input, select{width:100%;padding:12px 14px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:white;font-size:15px;outline:none;transition:0.3s;font-family:inherit;}
         select option{background:#1e293b;color:white;}
         input:focus, select:focus{border-color:#38bdf8;background:rgba(56,189,248,0.08);}
+        .grade-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
         .btn{width:100%;padding:13px;background:#2563eb;color:white;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;transition:0.3s;font-family:inherit;margin-top:4px;}
         .btn:hover{background:#1d4ed8;transform:translateY(-1px);}
         .btn:disabled{background:#334155;cursor:not-allowed;transform:none;}
@@ -25,6 +26,7 @@
         .toggle{text-align:center;margin-top:20px;font-size:14px;color:#64748b;}
         .toggle a{color:#38bdf8;text-decoration:none;font-weight:600;cursor:pointer;}
         .hint{font-size:11px;color:#475569;margin-top:4px;}
+        .preview{text-align:center;font-size:22px;font-weight:800;color:#38bdf8;margin-top:8px;min-height:30px;}
     </style>
 </head>
 <body>
@@ -56,20 +58,33 @@
             <input type="text" id="s-name" placeholder="Иванов Иван">
             <div class="hint">Запомни точно — оно используется для входа</div>
         </div>
+
         <div class="field">
             <label>Класс</label>
-            <select id="s-class">
-                <option value="">Выбери класс</option>
-                <option value="A">A</option>
-                <option value="B">B</option>
-                <option value="C">C</option>
-                <option value="D">D</option>
-                <option value="E1">E1</option>
-                <option value="E2">E2</option>
-                <option value="SOC">SOC</option>
-                <option value="MED">MED</option>
-            </select>
+            <div class="grade-row">
+                <select id="s-num" onchange="updatePreview()">
+                    <option value="">Номер</option>
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    <option value="9">9</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                </select>
+                <select id="s-letter" onchange="updatePreview()">
+                    <option value="">Буква</option>
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="C">C</option>
+                    <option value="D">D</option>
+                    <option value="E1">E1</option>
+                    <option value="E2">E2</option>
+                    <option value="SOC">SOC</option>
+                    <option value="MED">MED</option>
+                </select>
+            </div>
+            <div class="preview" id="grade-preview"></div>
         </div>
+
         <div class="field">
             <label>Пароль (мин. 6 символов)</label>
             <input type="password" id="s-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doSignup()">
@@ -82,6 +97,23 @@
 </div>
 
 <script>
+function updatePreview() {
+    const num    = document.getElementById('s-num').value;
+    const letter = document.getElementById('s-letter').value;
+    const prev   = document.getElementById('grade-preview');
+    if (num && letter) {
+        prev.innerText = num + letter;  // → "8A", "9MED", "10B" и т.д.
+    } else {
+        prev.innerText = '';
+    }
+}
+
+function getGrade() {
+    const num    = document.getElementById('s-num').value;
+    const letter = document.getElementById('s-letter').value;
+    return (num && letter) ? num + letter : '';
+}
+
 function show(panel) {
     document.getElementById('login-panel').style.display  = panel==='login'  ? 'block' : 'none';
     document.getElementById('signup-panel').style.display = panel==='signup' ? 'block' : 'none';
@@ -124,14 +156,14 @@ async function doLogin() {
 }
 
 async function doSignup() {
-    const name      = document.getElementById('s-name').value.trim();
-    const userClass = document.getElementById('s-class').value;  // "A", "B", "MED" и т.д.
-    const pass      = document.getElementById('s-pass').value;
-    const err       = document.getElementById('s-err');
-    const ok        = document.getElementById('s-ok');
+    const name  = document.getElementById('s-name').value.trim();
+    const grade = getGrade();  // "8A", "9MED" и т.д.
+    const pass  = document.getElementById('s-pass').value;
+    const err   = document.getElementById('s-err');
+    const ok    = document.getElementById('s-ok');
     err.innerText = ''; ok.innerText = '';
 
-    if (!name || !userClass || !pass) { err.innerText = 'Заполни все поля'; return; }
+    if (!name || !grade || !pass) { err.innerText = 'Заполни все поля'; return; }
     if (pass.length < 6) { err.innerText = 'Пароль минимум 6 символов'; return; }
 
     setBtn('s-btn', true);
@@ -139,7 +171,7 @@ async function doSignup() {
         const r = await fetch('signup.php', {
             method: 'POST',
             headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({fullname: name, grade: userClass, password: pass})
+            body: JSON.stringify({fullname: name, grade: grade, password: pass})
         });
         const data = await r.json();
         if (data.success) {
