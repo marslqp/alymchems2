@@ -32,7 +32,29 @@ nav{display:flex;justify-content:space-between;align-items:center;padding:14px 5
 .photo-text{flex:1;min-width:240px;}
 .photo-text h2{font-size:24px;font-weight:800;margin-bottom:14px;color:#38bdf8;}
 .photo-text p{color:#64748b;font-size:14px;line-height:1.8;margin-bottom:12px;}
-
+/* ADMIN SECTION */
+.admin-section {
+    max-width: 1100px;
+    margin: 0 auto 40px;
+    perspective: 1000px;
+}
+.teacher-card.featured-admin {
+    background: linear-gradient(145deg, rgba(56, 189, 248, 0.15), rgba(37, 99, 235, 0.05));
+    border: 2px solid rgba(56, 189, 248, 0.4);
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+    padding: 35px;
+}
+.admin-badge {
+    background: #f59e0b;
+    color: #451a03;
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    display: inline-block;
+    margin-bottom: 10px;
+}
 /* LANG */
 .lang-row{display:flex;gap:8px;justify-content:flex-end;max-width:1100px;margin:0 auto 20px;}
 .lbtn{background:none;border:2px solid transparent;border-radius:6px;padding:2px 8px;cursor:pointer;font-size:18px;transition:0.2s;opacity:0.5;}
@@ -51,9 +73,26 @@ nav{display:flex;justify-content:space-between;align-items:center;padding:14px 5
   <button class="lbtn active" id="lb-ru" onclick="setTLang('ru')">🇷🇺</button>
   <button class="lbtn" id="lb-en" onclick="setTLang('en')">🇺🇸</button>
 </div>
-
+<!-- ADMINISTRATION / ЗАВУЧ -->
+<div class="admin-section">
+  <div class="teacher-card featured-admin">
+    <img class="t-avatar" style="width: 120px; height: 120px; border-color: #f59e0b;" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300" alt="Academic Director">
+    <div class="t-info">
+      <div class="admin-badge" id="admin-badge-txt">Администрация</div>
+      <div class="t-name" style="font-size: 24px;">Асанов Бакыт Нурланович</div>
+      <div class="t-role" id="admin-role" style="color: #f59e0b;">Завуч по учебной части</div>
+      <div class="t-bio" id="admin-bio" style="font-size: 14px; color: #cbd5e1;">
+        Координирует академические программы лицея и внедрение инновационных методик обучения. Верит, что успех ученика начинается с дисциплины и вдохновения. Магистр педагогических наук с 15-летним стажем управления.
+      </div>
+      <div class="t-badges">
+        <span class="t-badge" style="background:rgba(245,158,11,0.2); border-color:#f59e0b; color:#fbbf24;">🎓 Магистр управления</span>
+        <span class="t-badge" id="admin-b2">🛡️ Академический контроль</span>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="page-title" id="page-title">НАШИ УЧИТЕЛЯ</div>
-<div class="page-sub" id="page-sub">Эксперты, вдохновляющие следующее поколение химиков</div>
+<div class="page-sub" id="page-sub">Эксперты, вдохновляющие следующее поколение ученых</div>
 
 <!-- FEATURED PHOTO SECTION -->
 <div class="photo-section">
@@ -90,7 +129,7 @@ nav{display:flex;justify-content:space-between;align-items:center;padding:14px 5
     <img class="t-avatar" src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200" alt="Elena Petrova">
     <div class="t-info">
       <div class="t-name">Asrat Addisu</div>
-      <div class="t-role" id="role2">Биология</div>
+      <div class="t-role" id="role2">Учитель биологии</div>
       <div class="t-bio" id="bio2">Победитель премии «Учитель года». Специалист по аналитической химии и лабораторной безопасности. Разработала уникальную программу по химическому анализу для 10-11 классов.</div>
       <div class="t-badges">
         <span class="t-badge" id="b2a">🥇 Лучший учитель</span>
@@ -103,7 +142,7 @@ nav{display:flex;justify-content:space-between;align-items:center;padding:14px 5
     <img class="t-avatar" src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200" alt="Mr. Asrat">
     <div class="t-info">
       <div class="t-name">Adnan Shehzad</div>
-      <div class="t-role" id="role3">Биология</div>
+      <div class="t-role" id="role3">Учитель биологии</div>
       <div class="t-bio" id="bio3">Превращает изучение сложнейших биологических процессов в захватывающее исследование жизни. Главный тренер олимпийского резерва. Его методика подготовки позволила воспитанникам взять 12+ наград на республиканском уровне, открыв им двери в лучшие медицинские и биоинженерные вузы.</div>
       <div class="t-badges">
         <span class="t-badge" id="b3a">🏅 12+ медалей олимпиад</span>
@@ -163,7 +202,12 @@ const TT = {
     'b4a':'🧬 Молекулярное моделирование','b4b':'📊 Таблица Менделеева',
     'role5':'Биохимия & Экология','bio5':'Кандидат химических наук. Преподаёт биохимию и экологическую химию в старших классах. Организует ежегодную научную ярмарку.',
     'b5a':'🎓 Кандидат наук','b5b':'🌿 Экохимия','b5c':'🏫 Наставник',
-    'footer-back':'← Вернуться на главную'
+    'footer-back':'← Вернуться на главную',
+    'admin-badge-txt': 'Администрация',
+    'admin-role': 'Завуч по учебной части',
+    'admin-bio': 'Координирует академические программы лицея и внедрение инновационных методик обучения. Верит, что успех ученика начинается с дисциплины и вдохновения. Магистр педагогических наук с 15-летним стажем управления.',
+    'admin-b2': '🛡️ Академический контроль',
+    'page-title': 'УЧИТЕЛЯ ТОЧНЫХ НАУК'
   },
   en: {
     'back-btn':'← Home','page-title':'OUR TEACHERS','page-sub':'Experts inspiring the next generation of chemists',
@@ -181,7 +225,12 @@ const TT = {
     'b4a':'🧬 Molecular Modeling','b4b':'📊 Periodic Table',
     'role5':'Biochemistry & Ecology','bio5':'PhD in Chemistry. Teaches biochemistry and environmental chemistry in senior grades. Organizes the annual science fair and collaborates with Kyrgyz universities.',
     'b5a':'🎓 PhD','b5b':'🌿 Eco-Chemistry','b5c':'🏫 Mentor',
-    'footer-back':'← Back to Home'
+    'footer-back':'← Back to Home',
+    'admin-badge-txt': 'Administration',
+    'admin-role': 'Academic Director',
+    'admin-bio': 'Coordinates academic programs and the implementation of innovative teaching methods. Believes that student success begins with discipline and inspiration. Master of Education with 15 years of management experience.',
+    'admin-b2': '🛡️ Academic Oversight',
+    'page-title': 'SCIENCE TEACHERS'
   }
 };
 
