@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head> 
+<head>
     <meta charset="UTF-8">
     <title>Login | AlymChems</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
@@ -14,8 +14,9 @@
         h2{font-size:22px;font-weight:700;margin-bottom:20px;color:#38bdf8;text-align:center;}
         .field{margin-bottom:18px;}
         label{display:block;font-size:13px;color:#94a3b8;margin-bottom:6px;}
-        input{width:100%;padding:12px 14px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:white;font-size:15px;outline:none;transition:0.3s;font-family:inherit;}
-        input:focus{border-color:#38bdf8;background:rgba(56,189,248,0.08);}
+        input, select{width:100%;padding:12px 14px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:white;font-size:15px;outline:none;transition:0.3s;font-family:inherit;}
+        select option{background:#1e293b;color:white;}
+        input:focus, select:focus{border-color:#38bdf8;background:rgba(56,189,248,0.08);}
         .btn{width:100%;padding:13px;background:#2563eb;color:white;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;transition:0.3s;font-family:inherit;margin-top:4px;}
         .btn:hover{background:#1d4ed8;transform:translateY(-1px);}
         .btn:disabled{background:#334155;cursor:not-allowed;transform:none;}
@@ -23,7 +24,6 @@
         .ok{color:#4ade80;font-size:13px;margin-top:8px;text-align:center;min-height:18px;}
         .toggle{text-align:center;margin-top:20px;font-size:14px;color:#64748b;}
         .toggle a{color:#38bdf8;text-decoration:none;font-weight:600;cursor:pointer;}
-        .divider{border:none;border-top:1px solid rgba(255,255,255,0.07);margin:20px 0;}
         .hint{font-size:11px;color:#475569;margin-top:4px;}
     </style>
 </head>
@@ -58,17 +58,17 @@
         </div>
         <div class="field">
             <label>Класс</label>
-           <select id="s-class">
-    <option value="">Select Class</option>
-    <option value="A">A</option>
-    <option value="B">B</option>
-    <option value="C">C</option>
-    <option value="D">D</option>
-    <option value="E1">E1</option>
-    <option value="E2">E2</option>
-    <option value="SOC">SOC</option>
-    <option value="MED">MED</option>
-</select>
+            <select id="s-class">
+                <option value="">Выбери класс</option>
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+                <option value="D">D</option>
+                <option value="E1">E1</option>
+                <option value="E2">E2</option>
+                <option value="SOC">SOC</option>
+                <option value="MED">MED</option>
+            </select>
         </div>
         <div class="field">
             <label>Пароль (мин. 6 символов)</label>
@@ -124,20 +124,22 @@ async function doLogin() {
 }
 
 async function doSignup() {
-    const name  = document.getElementById('s-name').value.trim();
-    const userClass = document.getElementById("s-class").value;
-    const pass  = document.getElementById('s-pass').value;
-    const err   = document.getElementById('s-err');
-    const ok    = document.getElementById('s-ok');
+    const name      = document.getElementById('s-name').value.trim();
+    const userClass = document.getElementById('s-class').value;  // "A", "B", "MED" и т.д.
+    const pass      = document.getElementById('s-pass').value;
+    const err       = document.getElementById('s-err');
+    const ok        = document.getElementById('s-ok');
     err.innerText = ''; ok.innerText = '';
-    if (!name || !grade || !pass) { err.innerText = 'Заполни все поля'; return; }
+
+    if (!name || !userClass || !pass) { err.innerText = 'Заполни все поля'; return; }
     if (pass.length < 6) { err.innerText = 'Пароль минимум 6 символов'; return; }
+
     setBtn('s-btn', true);
     try {
         const r = await fetch('signup.php', {
             method: 'POST',
             headers: {'Content-Type':'application/json'},
-            body: JSON.stringify({fullname: name, grade: parseInt(userClass), password: pass})
+            body: JSON.stringify({fullname: name, grade: userClass, password: pass})
         });
         const data = await r.json();
         if (data.success) {
@@ -148,9 +150,9 @@ async function doSignup() {
             setTimeout(() => { window.location.href = 'index.html'; }, 1000);
         } else {
             const msgs = {
-                name_taken:'Это имя уже занято. Войди в аккаунт.',
-                password_short:'Пароль слишком короткий',
-                missing_fields:'Заполни все поля'
+                name_taken:     'Это имя уже занято. Войди в аккаунт.',
+                password_short: 'Пароль слишком короткий',
+                missing_fields: 'Заполни все поля'
             };
             err.innerText = msgs[data.error] || 'Ошибка регистрации';
         }
